@@ -1,10 +1,18 @@
-import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 export async function GET(req, res) {
   try {
-    const retrieve = await prisma.todo.findMany({});
+    const params = new URL(req.url).searchParams;
+    const id = params.get("id");
+    const retrieve = await prisma.profile.findUnique({
+      where: {
+        user: {
+          id: id,
+        },
+      },
+    });
     return NextResponse.json({
       msg: "success",
       data: retrieve,
@@ -19,12 +27,11 @@ export async function GET(req, res) {
 
 export async function POST(req, res) {
   try {
-    const body = await req.json();
     const params = new URL(req.url).searchParams;
     const id = params.get("id");
-    const insert = await prisma.todo.create({
+    const insert = await prisma.profile.create({
       data: {
-        ...body,
+        ...req.body,
         user: {
           connect: {
             id: id,
@@ -48,7 +55,7 @@ export async function PATCH(req, res) {
   try {
     const params = new URL(req.url).searchParams;
     const id = params.get("id");
-    const updateOne = await prisma.todo.update({
+    const updateOne = await prisma.profile.update({
       where: {
         id: id,
       },
@@ -72,7 +79,7 @@ export async function DELETE(req, res) {
   try {
     const params = new URL(req.url).searchParams;
     const id = params.get("id");
-    const deleteOne = await prisma.todo.delete({
+    const deleteOne = await prisma.profile.delete({
       where: {
         id: id,
       },
