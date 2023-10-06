@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { myFunc } from "@/helper/tokendecode";
 
 const prisma = new PrismaClient();
 export async function GET(req, res) {
@@ -20,8 +21,8 @@ export async function GET(req, res) {
 export async function POST(req, res) {
   try {
     const body = await req.json();
-    const params = new URL(req.url).searchParams;
-    const id = params.get("id");
+    const decode = await myFunc(req.cookies.get("token")?.value);
+    const id = decode?.data?.payload?.id;
     const insert = await prisma.todo.create({
       data: {
         ...body,
@@ -53,7 +54,7 @@ export async function PATCH(req, res) {
         id: id,
       },
       data: {
-        ...req.body,
+        isComplete: true,
       },
     });
     return NextResponse.json({
@@ -61,6 +62,31 @@ export async function PATCH(req, res) {
       data: updateOne,
     });
   } catch (error) {
+    return NextResponse.json({
+      msg: "failed",
+      data: error,
+    });
+  }
+}
+export async function PUT(req, res) {
+  try {
+    const params = new URL(req.url).searchParams;
+    const id = params.get("id");
+    const body = await req.json();
+    const updateOne = await prisma.todo.update({
+      where: {
+        id: id,
+      },
+      data: {
+        task: body.task,
+      },
+    });
+    return NextResponse.json({
+      msg: "success",
+      data: updateOne,
+    });
+  } catch (error) {
+    console.log(error);
     return NextResponse.json({
       msg: "failed",
       data: error,

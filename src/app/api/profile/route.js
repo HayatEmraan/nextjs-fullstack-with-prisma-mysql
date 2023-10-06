@@ -1,11 +1,12 @@
+import { myFunc } from "@/helper/tokendecode";
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 export async function GET(req, res) {
   try {
-    const params = new URL(req.url).searchParams;
-    const id = params.get("id");
+    const decode = await myFunc(req.cookies.get("token")?.value);
+    const id = decode?.data?.payload?.id;
     const retrieve = await prisma.profile.findUnique({
       where: {
         user: {
@@ -27,8 +28,8 @@ export async function GET(req, res) {
 
 export async function POST(req, res) {
   try {
-    const params = new URL(req.url).searchParams;
-    const id = params.get("id");
+    const decode = await myFunc(req.cookies.get("token")?.value);
+    const id = decode?.data?.payload?.id;
     const insert = await prisma.profile.create({
       data: {
         ...req.body,
